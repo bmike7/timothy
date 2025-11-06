@@ -6,3 +6,14 @@ authors = [{ name = "Mike Bijl", email = "bijlmike3@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+sources = ["."]
+only-include = ["timothy"]
+
+[tool.poe]
+include = "infra_tasks.toml"
