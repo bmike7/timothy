@@ -7,6 +7,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
 
+[dependency-groups]
+test = ["pytest>=8.4.2", "sqlalchemy[postgresql-psycopg2binary]>=2.0.44"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -17,3 +20,6 @@ only-include = ["timothy"]
 
 [tool.poe]
 include = "infra_tasks.toml"
+
+[tool.poe.tasks]
+test = "pytest"

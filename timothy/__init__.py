@@ -60,7 +60,7 @@ class DBCluster:
     def ensure_db(self) -> None:
         conn_str = (
             f"host={self.host} port={self.port} user={self.username} "
-            f"password={self.password} dbname=defaultdb sslmode=require"
+            f"password={self.password} dbname=postgres"
         )
         create_query = f"CREATE DATABASE {self.db} template template0;"
         with already_exists():
