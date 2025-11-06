@@ -1,0 +1,8 @@
+[project]
+name = "timothy"
+version = "0.1.0"
+description = "A 🐘 guardian"
+authors = [{ name = "Mike Bijl", email = "bijlmike3@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
