@@ -57,3 +57,31 @@ backup**.
 
 🚀 Luckily, there is a way to clone such corrupt DB, but it involves
 some more steps. That is what this library automates.
+
+
+## 🤖 Example usage
+
+Now you can start using it in your migration scripts:
+
+```python
+from timothy import DBCluster
+
+
+def start_your_own_paper_company() -> None:
+    """
+    The IT guy left pretty angry a while ago. The DB isn't maintained.
+    """
+    DBCluster(
+        username="michael_scott",
+        password="thatswhatshesaid",
+        host="dunder.mifflin",
+        db="top_clients",
+    ).clone_to(
+        DBCluster(
+            username="michael_scott",
+            password="thatswhatshesaid!",
+            host="michael_scott_paper.company",
+            db="stolen_clients",
+        )
+    )
+```
