@@ -1,19 +1,19 @@
 name: timothy
 
 services:
-  michael_scott:
-    container_name: michael-scott
+  dunder_mifflin:
+    container_name: dunder-mifflin
     image: postgres
     ports:
       - 5432:5432
     environment:
       POSTGRES_USER: michael_scott
       POSTGRES_PASSWORD: thatswhatshesaid
-  jim_halpert:
-    container_name: jim-halpert
+  paper_company:
+    container_name: michael-scott-paper-company
     image: postgres
     ports:
       - 5433:5432
     environment:
-      POSTGRES_USER: jim_halpert
-      POSTGRES_PASSWORD: bearseatbeetsbearbeetsbattlestargalactica
+      POSTGRES_USER: michael_scott
+      POSTGRES_PASSWORD: thatswhatshesaid!

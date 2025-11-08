@@ -7,12 +7,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sess
 from timothy import DBCluster, exceptions as exc
 
 
-EMPLOYEES = {
-    "Michael": "Scott",
-    "Jim": "Halpert",
-    "Pam": "Beesly",
-    "Dwight": "Schrute",
-}
+EMPLOYEES = [("Michael", "Scott"), ("Pam", "Beesly"), ("Ryan", "Howard")]
 
 
 @dataclass
@@ -20,7 +15,7 @@ class Settings:
     username: str
     password: str
     db: str
-    port: int
+    port: int = 5432
 
 
 @dataclass
@@ -47,64 +42,67 @@ def create_session_scope(cfg: Settings):
 
 
 @pytest.fixture(scope="session")
-def michael_scope() -> DBScope:
+def dunder_mifflin_scope() -> DBScope:
     return create_session_scope(
         Settings(
             username="michael_scott",
             password="thatswhatshesaid",
-            db="dunder_mifflin",
-            port=5432,
+            db="top_clients",
         )
     )
 
 
 @pytest.fixture(scope="session")
-def initial_db(michael_scope: DBScope) -> None:
+def initial_db(dunder_mifflin_scope: DBScope) -> None:
     DBCluster(
-        username=(msttngs := michael_scope.settings).username,
+        username=(msttngs := dunder_mifflin_scope.settings).username,
         password=msttngs.password,
         host="localhost",
         db=msttngs.db,
     ).ensure_db()
-    Base.metadata.create_all(michael_scope.engine)
-    with michael_scope.session.begin() as s:
+    Base.metadata.create_all(dunder_mifflin_scope.engine)
+
+    with dunder_mifflin_scope.session.begin() as s:
         employees = [
-            Employee(firstname=first, lastname=last)
-            for first, last in EMPLOYEES.items()
+            Employee(firstname=first, lastname=last) for first, last in EMPLOYEES
         ]
         s.add_all(employees)
 
 
 @pytest.fixture(scope="session")
-def jim_scope() -> DBScope:
+def paper_comp_scope() -> DBScope:
     return create_session_scope(
         Settings(
-            username="jim_halpert",
-            password="bearseatbeetsbearbeetsbattlestargalactica",
-            db="dunder_mifflin",
+            username="michael_scott",
+            password="thatswhatshesaid!",
+            db="top_clients",
             port=5433,
         )
     )
 
 
-def test_e2e(initial_db, michael_scope: DBScope, jim_scope: DBScope) -> None:
+def test_e2e(
+    initial_db,
+    dunder_mifflin_scope: DBScope,
+    paper_comp_scope: DBScope,
+) -> None:
     DBCluster(
-        username=(msttngs := michael_scope.settings).username,
-        password=msttngs.password,
+        username=dunder_mifflin_scope.settings.username,
+        password=dunder_mifflin_scope.settings.password,
         host="localhost",
-        db=msttngs.db,
+        db=dunder_mifflin_scope.settings.db,
     ).clone_to(
         DBCluster(
-            username=(jsttngs := jim_scope.settings).username,
-            password=jsttngs.password,
+            username=paper_comp_scope.settings.username,
+            password=paper_comp_scope.settings.password,
             host="localhost",
-            db=jsttngs.db,
-            port=5433,
+            db=paper_comp_scope.settings.db,
+            port=paper_comp_scope.settings.port,
         )
     )
 
-    with jim_scope.session.begin() as s:
-        for first, last in EMPLOYEES.items():
+    with paper_comp_scope.session.begin() as s:
+        for first, last in EMPLOYEES:
             query = select(Employee).where(Employee.firstname == first)
             assert (emp := s.execute(query).scalar_one())
             assert emp.lastname == last
@@ -112,23 +110,22 @@ def test_e2e(initial_db, michael_scope: DBScope, jim_scope: DBScope) -> None:
 
 def test_prevent_already_exists(
     initial_db,
-    michael_scope: DBScope,
-    jim_scope: DBScope,
+    dunder_mifflin_scope: DBScope,
+    paper_comp_scope: DBScope,
 ) -> None:
     with pytest.raises(exc.AlreadyExists):
         DBCluster(
-            username=(msttngs := michael_scope.settings).username,
-            password=msttngs.password,
+            username=dunder_mifflin_scope.settings.username,
+            password=dunder_mifflin_scope.settings.password,
             host="localhost",
-            db=msttngs.db,
+            db=dunder_mifflin_scope.settings.db,
         ).clone_to(
             DBCluster(
-                username=(jsttngs := jim_scope.settings).username,
-                password=jsttngs.password,
+                username=paper_comp_scope.settings.username,
+                password=paper_comp_scope.settings.password,
                 host="localhost",
                 # postgres exists by default
                 db="postgres",
                 port=5433,
             )
         )
-

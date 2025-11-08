@@ -57,11 +57,15 @@ class DBCluster:
     def _common_args(self) -> list[str]:
         return ["-h", self.host, "-p", str(self.port), "-U", self.username, "-w"]
 
-    def ensure_db(self) -> None:
-        conn_str = (
-            f"host={self.host} port={self.port} user={self.username} "
-            f"password={self.password} dbname=postgres"
+    def ensure_db(self, default_db: str = "postgres") -> None:
+        conn_params = dict(
+            host=self.host,
+            port=self.port,
+            user=self.username,
+            password=self.password,
+            dbname=default_db,
         )
+        conn_str = " ".join(f"{k}={v}" for k, v in conn_params.items())
         create_query = f"CREATE DATABASE {self.db} template template0;"
         with already_exists():
             psql(conn_str, "-c", create_query)
