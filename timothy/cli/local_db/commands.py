@@ -9,6 +9,7 @@ from typing import Callable
 
 import click
 from testcontainers.postgres import PostgresContainer
+from timothy import DBCluster
 from timothy.cli import cli, stop_event
 
 
@@ -39,7 +40,7 @@ pass_cfg = partial(pass_ctx, loc="cfg")
 def local_db(ctx, data_loc: Path | None) -> None:
     ctx.ensure_object(dict)
     if data_loc is None:
-        data_loc = Path.cwd() / ".db-data"
+        data_loc = Path.cwd() / ".db-data" / "seed.sql"
     ctx.obj["cfg"] = Cfg(data_loc)
 
 
@@ -51,7 +52,9 @@ def local_db(ctx, data_loc: Path | None) -> None:
 )
 @click.argument("conn_str")
 @pass_cfg
-def dump(cfg: Cfg, conn_str: str) -> None: ...
+def dump(cfg: Cfg, conn_str: str) -> None:
+    DBCluster.from_conn_str(conn_str).clone_to(cfg.data_loc)
+    click.echo(f"Database dumped to {cfg.data_loc}")
 
 
 @local_db.command(
