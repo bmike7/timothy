@@ -7,12 +7,21 @@ The name is inspired by Dumbo's [Timothy](https://disney.fandom.com/wiki/Timothy
 > Timothy is a stowaway of a traveling circus, where he becomes
   the self-appointed guardian and mentor of Dumbo.
 
+## 💻 CLI
+
+This repo also comes with a CLI tool for manual tasks.
+If you want the command-line interface instead of the library,
+see: [Timothy CLI](./timothy/README.md).
+
 
 ## Prerequisites
 
 Install:
 
-- `libql` which includes `pg_dump` & `psql`.
+- `libpq` (the PostgreSQL client library, which includes `pg_dump` & `psql`).
+
+For development, also install:
+
 - `uv tool install poethepoet`
 
 
