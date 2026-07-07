@@ -2,6 +2,7 @@
 Automates a local development workflow using Testcontainers and Git worktrees.
 """
 
+import shutil
 from dataclasses import dataclass
 from functools import partial, update_wrapper
 from pathlib import Path
@@ -11,6 +12,8 @@ import click
 from testcontainers.postgres import PostgresContainer
 from timothy import DBCluster
 from timothy.cli import cli, stop_event
+
+from . import git
 
 
 @dataclass
@@ -64,7 +67,26 @@ def dump(cfg: Cfg, conn_str: str) -> None:
     """,
 )
 @pass_cfg
-def copy(cfg: Cfg) -> None: ...
+def copy(cfg: Cfg) -> None:
+    current = git.Git.from_git_setup(cfg.data_loc)
+    data_loc = git.DataLoc.from_git(current)
+
+    if data_loc.target.exists():
+        if click.confirm(
+            f"Local database data already exists at {data_loc.target}. Overwrite?",
+            default=False,
+            abort=True,
+        ):
+            git.console.print(f"Removing existing data at {data_loc.target}...")
+            shutil.rmtree(data_loc.target)
+
+    git.console.print(f"Cloning [bold cyan]{data_loc.source}[/bold cyan]...")
+    try:
+        # Use symlinks=False to ensure we copy the actual data
+        shutil.copytree(data_loc.source, data_loc.target, symlinks=False)
+    except Exception as e:
+        git.console.print(f"[red]Error during cloning: {e}[/red]")
+        return
 
 
 @local_db.command(help="Spin up a Postgres Testcontainer with a local dump mounted.")
